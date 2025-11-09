@@ -92,7 +92,7 @@ const AdminDashboard = () => {
       console.log('Agents:', agentData);
       console.log('Activities:', activityData);
 
-      setOverview(overviewData);
+      setOverview(overviewData.data);
       setAgents(agentData.agents || []);
       setActivities(activityData.activities || []);
     } catch (error) {

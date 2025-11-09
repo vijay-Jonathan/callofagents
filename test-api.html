@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <button onclick="testAPI()">Test API Connection</button>
+    <div id="result"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const API_BASE_URL = 'https://worldlink-ai.xyz:8100';
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                console.log('Testing API connection to:', API_BASE_URL);
+                
+                // Test health endpoint
+                const response = await axios.get(`${API_BASE_URL}/health`, {
+                    timeout: 10000,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('API Response:', response.data);
+                resultDiv.innerHTML = `<pre>${JSON.stringify(response.data, null, 2)}</pre>`;
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                resultDiv.innerHTML = `<div style="color: red;">
+                    <h3>Error:</h3>
+                    <p>${error.message}</p>
+                    ${error.response ? `<p>Status: ${error.response.status}</p>` : ''}
+                    ${error.response ? `<pre>${JSON.stringify(error.response.data, null, 2)}</pre>` : ''}
+                </div>`;
+            }
+        }
+    </script>
+</body>
+</html>
