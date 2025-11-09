@@ -17,18 +17,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: 'callofagents/package-lock.json'
 
       - name: Install dependencies
+        working-directory: ./callofagents
         run: npm ci
 
       - name: Build application
+        working-directory: ./callofagents
         run: npm run build
         env:
           NODE_ENV: production
@@ -36,7 +40,7 @@ jobs:
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
-          publish-dir: './dist'
+          publish-dir: './callofagents/dist'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions"
