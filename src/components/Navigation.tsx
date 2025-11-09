@@ -1,5 +1,7 @@
-import { Bot, LayoutDashboard, Wrench } from "lucide-react";
+import { Bot, LayoutDashboard, Users, AlertTriangle, Receipt, Landmark, History } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Navigation component for the app interface
 
 interface NavigationProps {
   activeTab: string;
@@ -10,7 +12,11 @@ const Navigation = ({ activeTab, onTabChange }: NavigationProps) => {
   const tabs = [
     { id: 'chatbot', label: 'AI Chatbot', icon: Bot },
     { id: 'dashboard', label: 'Admin Dashboard', icon: LayoutDashboard },
-    { id: 'tools', label: 'Tool Demo', icon: Wrench },
+    { id: 'call-history', label: 'Call History', icon: History },
+    { id: 'manual-review', label: 'Manual Review', icon: AlertTriangle },
+    { id: 'customers', label: 'Customer Data', icon: Users },
+    { id: 'receipts', label: 'Receipt Processing', icon: Receipt },
+    { id: 'financial', label: 'Financial Services', icon: Landmark },
   ];
 
   return (

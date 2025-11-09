@@ -62,6 +62,19 @@ export const chatbotApi = {
   },
 };
 
+// Customer Data APIs
+export const customerApi = {
+  getAllCustomers: async (limit = 50, offset = 0) => {
+    const response = await api.get(`/api/admin/customers?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  getCustomerDetails: async (customerId: number) => {
+    const response = await api.get(`/api/admin/customers/${customerId}/details`);
+    return response.data;
+  },
+};
+
 // Admin APIs
 export const adminApi = {
   getOverview: async (timeRange = 'today') => {
@@ -75,7 +88,8 @@ export const adminApi = {
   },
 
   getActivityFeed: async (limit = 10) => {
-    const response = await api.get(`/api/admin/agents/activity-feed?limit=${limit}`);
+    // Use interactions/timeline endpoint which has CrewAI trace data
+    const response = await api.get(`/api/admin/interactions/timeline?limit=${limit}`);
     return response.data;
   },
 
@@ -86,6 +100,64 @@ export const adminApi = {
 
   getComplianceReport: async (timeRange = 'week') => {
     const response = await api.get(`/api/admin/compliance/report?time_range=${timeRange}`);
+    return response.data;
+  },
+
+  // Manual Review APIs
+  getManualReviews: async (status = 'pending', limit = 50) => {
+    const response = await api.get(`/api/admin/manual-reviews?status=${status}&limit=${limit}`);
+    return response.data;
+  },
+
+  flagRequestForReview: async (requestId: string, reason: string, priority = 'medium', criteria = 'manual') => {
+    const response = await api.post(`/api/admin/manual-reviews/flag?request_id=${requestId}&reason=${reason}&priority=${priority}&criteria=${criteria}`);
+    return response.data;
+  },
+
+  updateManualReview: async (reviewId: string, status: string, notes?: string, assignedTo?: string) => {
+    const response = await api.put(`/api/admin/manual-reviews/${reviewId}`, {
+      status,
+      notes,
+      assigned_to: assignedTo,
+    });
+    return response.data;
+  },
+
+  autoFlagSuspiciousRequests: async () => {
+    const response = await api.post('/api/admin/manual-reviews/auto-flag');
+    return response.data;
+  },
+
+  // Chat History APIs
+  getChatSessions: async (limit = 50, status?: string) => {
+    const params = new URLSearchParams({ limit: limit.toString() });
+    if (status) params.append('status', status);
+    const response = await api.get(`/api/admin/chat/sessions?${params}`);
+    return response.data;
+  },
+
+  getChatMessages: async (sessionId: string, limit = 100) => {
+    const response = await api.get(`/api/admin/chat/sessions/${sessionId}/messages?limit=${limit}`);
+    return response.data;
+  },
+
+  getChatAnalytics: async (timeRange = 'today') => {
+    const response = await api.get(`/api/admin/chat/analytics?time_range=${timeRange}`);
+    return response.data;
+  },
+
+  getCallDetails: async (sessionId: string) => {
+    const response = await api.get(`/api/admin/calls/${sessionId}/details`);
+    return response.data;
+  },
+
+  getTransactionDetails: async (transactionId: number) => {
+    const response = await api.get(`/api/admin/transactions/${transactionId}/details`);
+    return response.data;
+  },
+
+  deleteChatSession: async (sessionId: string) => {
+    const response = await api.delete(`/api/admin/chat/sessions/${sessionId}`);
     return response.data;
   },
 };
@@ -117,25 +189,107 @@ export const intelligenceApi = {
   },
 };
 
-// Tool Calling APIs
-export const toolsApi = {
-  runDemo: async (scenario: string) => {
-    const response = await api.post(`/api/tools/demo?scenario=${scenario}`);
+// Receipt Processing APIs
+export const receiptApi = {
+  uploadReceipt: async (customerId: number, file: File) => {
+    const formData = new FormData();
+    formData.append('customer_id', customerId.toString());
+    formData.append('file', file);
+    
+    const response = await api.post('/api/receipts/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
-  executeCustom: async (message: string) => {
-    const response = await api.post('/api/tools/execute', { message });
+  getCustomerReceipts: async (customerId: number, limit = 50, category?: string) => {
+    const params = new URLSearchParams({ limit: limit.toString() });
+    if (category) params.append('category', category);
+    const response = await api.get(`/api/receipts/customer/${customerId}?${params}`);
     return response.data;
   },
 
-  getAvailableTools: async () => {
-    const response = await api.get('/api/tools/available');
+  getSpendingSummary: async (customerId: number, months = 3) => {
+    const response = await api.get(`/api/receipts/customer/${customerId}/summary?months=${months}`);
     return response.data;
   },
 
-  getStats: async () => {
-    const response = await api.get('/api/tools/stats');
+  getCategories: async () => {
+    const response = await api.get('/api/receipts/categories');
+    return response.data;
+  },
+};
+
+// Financial Services APIs (Plaid + Stripe)
+export const financialApi = {
+  // Plaid - Bank Linking
+  createLinkToken: async (customerId: number) => {
+    const response = await api.post('/api/financial/plaid/create-link-token', {
+      customer_id: customerId,
+    });
+    return response.data;
+  },
+
+  exchangeToken: async (customerId: number, publicToken: string) => {
+    const response = await api.post('/api/financial/plaid/exchange-token', {
+      customer_id: customerId,
+      public_token: publicToken,
+    });
+    return response.data;
+  },
+
+  getBalances: async (customerId: number) => {
+    const response = await api.get(`/api/financial/plaid/balances/${customerId}`);
+    return response.data;
+  },
+
+  getTransactions: async (customerId: number, days = 30) => {
+    const response = await api.get(`/api/financial/plaid/transactions/${customerId}?days=${days}`);
+    return response.data;
+  },
+
+  // Stripe - Payments
+  processPayment: async (customerId: number, amount: number, description: string, source = 'card') => {
+    const response = await api.post('/api/financial/stripe/process-payment', {
+      customer_id: customerId,
+      amount,
+      description,
+      source,
+    });
+    return response.data;
+  },
+
+  createRefund: async (paymentId: string, amount?: number, reason = 'requested_by_customer') => {
+    const response = await api.post('/api/financial/stripe/refund', {
+      payment_id: paymentId,
+      amount,
+      reason,
+    });
+    return response.data;
+  },
+
+  getPaymentHistory: async (customerId: number, limit = 50) => {
+    const response = await api.get(`/api/financial/stripe/payment-history/${customerId}?limit=${limit}`);
+    return response.data;
+  },
+
+  getPaymentSummary: async (customerId: number) => {
+    const response = await api.get(`/api/financial/stripe/payment-summary/${customerId}`);
+    return response.data;
+  },
+
+  // Orchestration
+  payFromLinkedAccount: async (customerId: number, amount: number, description: string) => {
+    const response = await api.post(
+      `/api/financial/pay-from-linked-account?customer_id=${customerId}&amount=${amount}&description=${encodeURIComponent(description)}`
+    );
+    return response.data;
+  },
+
+  getFinancialOverview: async (customerId: number) => {
+    const response = await api.get(`/api/financial/financial-overview/${customerId}`);
     return response.data;
   },
 };
