@@ -4,21 +4,14 @@
     <meta charset="utf-8" />
     <title>Call of Agents</title>
     <script>
-      // GitHub Pages SPA redirect for subdirectory deployment
-      // This redirects 404 errors to index.html with the path as a query parameter
-      var pathSegmentsToKeep = 2; // Keep 'callofagents' segment
+      // GitHub Pages SPA redirect for repository subdirectory
+      // Redirects 404 errors to index.html with the path as query parameter
+      var segmentCount = 1; // Keep 'callofagents' segment
       var l = window.location;
-      var path = l.pathname;
-      
-      // Check if we're in a subdirectory deployment
-      if (path.includes('/callofagents/')) {
-        pathSegmentsToKeep = 2; // Keep username/callofagents
-      }
-      
       l.replace(
         l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        l.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(segmentCount).join('/').replace(/&/g, '~and~') +
         (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
         l.hash
       );
