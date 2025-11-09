@@ -87,11 +87,16 @@ const AdminDashboard = () => {
         adminApi.getActivityFeed(),
       ]);
 
+      console.log('📊 Dashboard Data Received:');
+      console.log('Overview:', overviewData);
+      console.log('Agents:', agentData);
+      console.log('Activities:', activityData);
+
       setOverview(overviewData);
       setAgents(agentData.agents || []);
       setActivities(activityData.activities || []);
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      console.error('❌ Failed to fetch dashboard data:', error);
       toast({
         title: "Error",
         description: "Failed to load dashboard data",
@@ -155,17 +160,23 @@ const AdminDashboard = () => {
           <Activity className="w-6 h-6 text-primary" />
           AI Agent Performance
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {agents.map((agent, index) => (
-            <AgentCard
-              key={index}
-              name={agent.agent_name}
-              successRate={agent.success_rate}
-              totalTasks={agent.total_tasks}
-              status={agent.current_status}
-            />
-          ))}
-        </div>
+        {agents.length === 0 ? (
+          <Card className="glass p-12 text-center">
+            <p className="text-muted-foreground">No agent data available</p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {agents.map((agent, index) => (
+              <AgentCard
+                key={index}
+                name={agent.agent_name}
+                successRate={agent.success_rate}
+                totalTasks={agent.total_tasks}
+                status={agent.current_status}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Activity Feed */}
@@ -175,29 +186,33 @@ const AdminDashboard = () => {
           Live Activity Feed
         </h2>
         <Card className="glass p-6">
-          <div className="space-y-3">
-            {activities.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-smooth"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse-slow" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      Customer {activity.customer} - {activity.action}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {activity.agent} • {activity.duration}s
-                    </p>
+          {activities.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No recent activity</p>
+          ) : (
+            <div className="space-y-3">
+              {activities.map((activity, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-smooth"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse-slow" />
+                    <div>
+                      <p className="text-sm font-medium">
+                        Customer {activity.customer} - {activity.action}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {activity.agent} • {activity.duration}s
+                      </p>
+                    </div>
                   </div>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(activity.timestamp).toLocaleTimeString()}
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(activity.timestamp).toLocaleTimeString()}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </div>
