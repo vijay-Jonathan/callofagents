@@ -24,22 +24,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: 'callofagents/package-lock.json'
 
       - name: Install dependencies
-        working-directory: ./callofagents
         run: npm ci
 
       - name: Build application
-        working-directory: ./callofagents
         run: npm run build
         env:
           NODE_ENV: production
@@ -50,7 +45,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './callofagents/dist'
+          path: './dist'
 
   deploy:
     environment:
